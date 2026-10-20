@@ -960,6 +960,20 @@
     overflow: visible;
     flex: none;
   }
+
+  /* ===== Compact text tools (so the column fits shorter screens) ===== */
+  .right-col { gap: 8px; }
+  .right-col > .btn-bar.tools-bar { padding: 6px; gap: 6px; }
+  .fmt-ctl, .size-ctl { padding: 5px 4px; gap: 4px; }
+  .fmt-grid { grid-template-columns: repeat(3, 30px); gap: 4px; }
+  .fmt-btn { width: 30px; height: 24px; font-size: 12px; border-radius: 7px; }
+  .fmt-btn svg { width: 15px; height: 15px; }
+  .fmt-btn b { font-size: 12px !important; }
+  .fmt-sep { margin: 1px 0; }
+  .size-btn { width: 30px; height: 26px; font-size: 12px; border-radius: 7px; }
+  .size-val { min-width: 30px; }
+  .size-row { gap: 4px; }
+  .size-lbl { font-size: 10px; }
 </style>
 </head>
 <body>
@@ -1177,10 +1191,14 @@
       <button type="button" class="fmt-btn" data-cmd="subscript" title="Subscript" aria-label="Subscript" aria-pressed="false"><span>X<sub style="font-size:9px;font-weight:700;line-height:0">2</sub></span></button>
       <button type="button" class="fmt-btn" data-cmd="superscript" title="Superscript" aria-label="Superscript" aria-pressed="false"><span>X<sup style="font-size:9px;font-weight:700;line-height:0">2</sup></span></button>
       <div class="fmt-sep" style="grid-column:1/-1"></div>
+      <button type="button" class="fmt-btn" data-cmd="listUpperAlpha" title="Uppercase letter list (A. B. C.)" aria-label="Uppercase letter list (A. B. C.)" aria-pressed="false"><b style="font-size:14px;font-family:Georgia,serif">A.</b></button>
+      <button type="button" class="fmt-btn" data-cmd="listLowerAlpha" title="Lowercase letter list (a. b. c.)" aria-label="Lowercase letter list (a. b. c.)" aria-pressed="false"><b style="font-size:14px;font-family:Georgia,serif">a.</b></button>
       <button type="button" class="fmt-btn" data-cmd="insertOrderedList" title="Numbered list (1. a. i. by indent level)" aria-label="Numbered list (1. a. i. by indent level)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 4.5l1.5-.8V9"/><path d="M3.8 13.5a1.5 1.5 0 1 1 2.6 1L3.8 17.5h3"/></svg></button>
+      <button type="button" class="fmt-btn" data-cmd="listUpperRoman" title="Uppercase Roman numeral list (I. II. III.)" aria-label="Uppercase Roman numeral list (I. II. III.)" aria-pressed="false"><b style="font-size:14px;font-family:Georgia,serif">I.</b></button>
+      <button type="button" class="fmt-btn" data-cmd="listLowerRoman" title="Lowercase Roman numeral list (i. ii. iii.)" aria-label="Lowercase Roman numeral list (i. ii. iii.)" aria-pressed="false"><b style="font-size:14px;font-family:Georgia,serif">i.</b></button>
       <button type="button" class="fmt-btn" data-cmd="insertUnorderedList" title="Bullet list (bullet style changes by indent level)" aria-label="Bullet list (bullet style changes by indent level)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg></button>
-      <button type="button" class="fmt-btn" data-cmd="outdent" title="Decrease indent (Shift+Tab in a list)" aria-label="Decrease indent (Shift+Tab in a list)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="7 8 3 12 7 16"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="18" x2="11" y2="18"/></svg></button>
-      <button type="button" class="fmt-btn" data-cmd="indent" title="Increase indent (Tab in a list)" aria-label="Increase indent (Tab in a list)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 8 7 12 3 16"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="18" x2="11" y2="18"/></svg></button>
+      <button type="button" class="fmt-btn" data-cmd="outdent" title="Indent left (Shift+Tab in a list)" aria-label="Indent left (Shift+Tab in a list)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="7 8 3 12 7 16"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="18" x2="11" y2="18"/></svg></button>
+      <button type="button" class="fmt-btn" data-cmd="indent" title="Indent right (Tab in a list)" aria-label="Indent right (Tab in a list)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 8 7 12 3 16"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="18" x2="11" y2="18"/></svg></button>
       <button type="button" class="fmt-btn" data-cmd="lineSpacing" title="Line spacing (cycles 1.0 / 1.5 / 2.0 for the whole field)" aria-label="Line spacing (cycles 1.0 / 1.5 / 2.0 for the whole field)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="7 4 4 7 10 7 7 4" /><line x1="7" y1="7" x2="7" y2="17"/><polyline points="4 17 7 20 10 17"/><line x1="14" y1="7" x2="21" y2="7"/><line x1="14" y1="12" x2="21" y2="12"/><line x1="14" y1="17" x2="21" y2="17"/></svg></button>
       <div class="fmt-sep" style="grid-column:1/-1"></div>
       <button type="button" class="fmt-btn" data-cmd="justifyLeft" title="Align left" aria-label="Align left" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="10" x2="14" y2="10"/><line x1="3" y1="14" x2="21" y2="14"/><line x1="3" y1="18" x2="14" y2="18"/></svg></button>
@@ -1722,10 +1740,28 @@
         if (STATE.includes(c)) {
           let on = false;
           if (inField) { try { on = document.queryCommandState(c); } catch (e) {} }
+          if (c === 'insertOrderedList' && on) { const o = currentOl(); if (o && o.style.listStyleType) on = false; }
           b.setAttribute('aria-pressed', String(on));
+        } else if (LIST_STYLES[c]) {
+          const o = inField ? currentOl() : null;
+          b.setAttribute('aria-pressed', String(!!o && o.style.listStyleType === LIST_STYLES[c]));
         }
         b.disabled = !active;
       });
+    }
+    const LIST_STYLES = { listUpperAlpha: 'upper-alpha', listLowerAlpha: 'lower-alpha', listUpperRoman: 'upper-roman', listLowerRoman: 'lower-roman' };
+    function currentOl() {
+      const sel = window.getSelection();
+      const n = sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
+      const li = n && n.closest('li');
+      const ol = li && li.closest('ol, ul');
+      return ol && ol.tagName === 'OL' && lastField && lastField.contains(ol) ? ol : null;
+    }
+    function applyListStyle(style) {
+      let ol = currentOl();
+      if (ol && ol.style.listStyleType === style) { document.execCommand('insertOrderedList', false, null); return; }  // same style: toggle off
+      if (!ol) { document.execCommand('insertOrderedList', false, null); ol = currentOl(); }
+      if (ol) ol.style.listStyleType = style;
     }
     function restoreless() { return !!(lastField && lastField.offsetParent); }
 
@@ -1745,6 +1781,10 @@
         lastField.dataset.ls = SPACING[i];
         lastField.style.lineHeight = SPACING[i];
         b.title = 'Line spacing: ' + (SPACING[i] || '1.0') + ' (click to change)';
+      } else if (LIST_STYLES[c]) {
+        applyListStyle(LIST_STYLES[c]);
+      } else if (c === 'insertOrderedList' && currentOl() && currentOl().style.listStyleType) {
+        currentOl().style.listStyleType = '';   // back to plain 1. 2. 3.
       } else {
         document.execCommand(c, false, null);
       }
