@@ -710,8 +710,9 @@
   .ta-title { text-align: center; font-weight: 700; min-height: 2.2em; }
   .ta-rationale   { min-height: 112px; }
   .ta-objectives  { min-height: 96px; }
-  .ta-methodology { min-height: 190px; }
-  .ta-abstract    { min-height: 450px; }
+  /* Minimum heights only; the fields stretch to fill the A4 page (see "Fixed A4 layout" below) */
+  .ta-methodology { min-height: 120px; }
+  .ta-abstract    { min-height: 200px; }
   .tlabel.center  { text-align: center; font-size: 14px; margin-bottom: 8px; }
 
   @media screen {
@@ -765,6 +766,200 @@
     .ta { overflow: visible; }
     .tcell { break-inside: avoid; page-break-inside: avoid; }
   }
+  /* ===== Fixed A4 layout =====
+     The sheet is exactly one A4 page. The thesis fields stretch to use all the
+     free space, so the signature block always sits at the bottom of the page. */
+  .paper {
+    height: 297mm;
+    min-height: 297mm;
+    display: flex;
+    flex-direction: column;
+  }
+  .paper > form {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .thesis-box {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .thesis-box > .tcell { flex: 0 0 auto; }
+  .thesis-box > .tcell.fill {
+    flex: var(--g, 1) 1 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .tcell.fill > .ta {
+    flex: 1 1 0;
+    min-height: 60px;
+    overflow-y: auto;
+  }
+  .sign-block { flex: none; margin-top: 0; }
+
+  @media print {
+    /* A4 height minus the 0.5in top and bottom page margins, with a small safety gap */
+    .paper { height: 271mm; min-height: 0; overflow: visible; }
+    .row-resizer { display: none !important; }
+  }
+
+  /* ===== Adjustable fields and text size ===== */
+  .ta { font-size: var(--ta-size, 13px); }
+  .tcell.fill { position: relative; }
+  .row-resizer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -5px;
+    height: 10px;
+    cursor: row-resize;
+    z-index: 5;
+    touch-action: none;
+    outline: none;
+  }
+  .row-resizer::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 4px;
+    margin: -2px 0 0 -22px;
+    border-radius: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.12s ease;
+  }
+  @media (hover: hover) { .row-resizer:hover::before { opacity: 0.7; } }
+  .row-resizer:focus-visible::before,
+  .row-resizer.active::before { opacity: 1; }
+
+  .size-ctl {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 6px 8px;
+    background: #ffffff;
+    color: var(--accent);
+    border: 1px solid var(--ui-border);
+    border-radius: 12px;
+  }
+  .size-lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.4px; }
+  .size-row { display: flex; align-items: center; justify-content: space-between; gap: 4px; width: 100%; }
+  .size-btn {
+    width: 38px;
+    height: 34px;
+    padding: 0;
+    background: var(--accent);
+    color: #ffffff;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .size-btn:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .size-btn:active:not(:disabled) { transform: translateY(1px); }
+  .size-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .size-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px var(--accent); }
+  .size-val { min-width: 24px; text-align: center; font-size: 13px; font-weight: 700; color: #0f172a; }
+  /* ===== Rich text fields ===== */
+  div.ta {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    cursor: text;
+    outline: none;
+    -webkit-user-modify: read-write;
+  }
+  .ta p, .ta div { margin: 0; }
+  .ta ul, .ta ol { margin: 0; padding-left: 1.7em; }
+  .ta ul { list-style-type: disc; }
+  .ta ul ul { list-style-type: circle; }
+  .ta ul ul ul { list-style-type: square; }
+  .ta ul ul ul ul { list-style-type: disc; }
+  .ta ol { list-style-type: decimal; }
+  .ta ol ol { list-style-type: lower-alpha; }
+  .ta ol ol ol { list-style-type: lower-roman; }
+  .ta ol ol ol ol { list-style-type: decimal; }
+  .ta blockquote { margin: 0 0 0 2em; padding: 0; border: 0; }
+  .ta sub, .ta sup { line-height: 0; }
+  .ta li { white-space: pre-wrap; }
+
+  /* ===== Text size + formatting panels (right toolbar) ===== */
+  .btn-bar.action-bar { max-height: calc(100vh - 32px); overflow-y: auto; overscroll-behavior: contain; }
+  .fmt-ctl {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 6px;
+    background: #ffffff;
+    color: var(--accent);
+    border: 1px solid var(--ui-border);
+    border-radius: 12px;
+  }
+  .fmt-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 34px);
+    gap: 5px;
+    justify-content: center;
+  }
+  .fmt-sep { height: 1px; background: var(--ui-border); width: 100%; margin: 3px 0; }
+  .fmt-btn {
+    width: 34px;
+    height: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    color: var(--accent);
+    border: 1px solid var(--ui-border);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  }
+  .fmt-btn svg { width: 18px; height: 18px; }
+  .fmt-btn small { font-size: 9px; font-weight: 700; }
+  .fmt-btn:hover:not(:disabled) { background: var(--accent-soft); border-color: var(--accent); }
+  .fmt-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #ffffff; }
+  .fmt-btn:active:not(:disabled) { transform: translateY(1px); }
+  .fmt-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .fmt-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px var(--accent); }
+  .size-btn { width: 34px; }
+  .size-row { justify-content: center; gap: 5px; }
+  .size-val { min-width: 34px; }
+
+  /* ===== Right column: two separate cards ===== */
+  .right-col {
+    position: sticky;
+    top: 16px;
+    flex: none;
+    width: 150px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+  .right-col::-webkit-scrollbar { display: none; }
+  .right-col > .btn-bar.action-bar,
+  .right-col > .btn-bar.tools-bar {
+    position: static;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    flex: none;
+  }
 </style>
 </head>
 <body>
@@ -785,14 +980,6 @@
 
 <div class="paper" id="paperDoc">
 
-  <!-- Header Section -->
-  <div class="header">
-    <img src="https://lh3.googleusercontent.com/d/1pqU0q2HoAp8liBybxU-AG-_nH79XMX6q=w500" data-fallbacks="https://drive.google.com/thumbnail?id=1pqU0q2HoAp8liBybxU-AG-_nH79XMX6q&amp;sz=w500|https://drive.google.com/uc?export=view&amp;id=1pqU0q2HoAp8liBybxU-AG-_nH79XMX6q" onerror="var f=(this.dataset.fallbacks||'').split('|').filter(Boolean);if(f.length){this.dataset.fallbacks=f.slice(1).join('|');this.src=f[0];}" alt="DOST Logo" class="dost-logo">
-    <h3>Department of Science and Technology</h3>
-    <h3 class="bold-inst">SCIENCE EDUCATION INSTITUTE</h3>
-  </div>
-
-  
   <form id="thesisForm" onsubmit="return false;">
 
     <!-- Scholar information -->
@@ -827,23 +1014,25 @@
     <!-- Thesis table -->
     <div class="thesis-box">
       <div class="tcell title-cell">
-        <textarea class="ta ta-title" rows="1" aria-label="Title of Thesis"></textarea>
+        <div class="ta ta-title" aria-label="Title of Thesis" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true"></div>
       </div>
       <div class="tcell caption">Title of Thesis</div>
 
-      <div class="tcell">
-        <label class="tlabel" for="rationale">Brief Rationale</label>
-        <textarea class="ta ta-rationale" id="rationale" rows="1"></textarea>
+      <div class="tcell fill" style="--g:1.2">
+        <label class="tlabel" id="rationaleLbl" data-for="rationale">Brief Rationale</label>
+        <div class="ta ta-rationale" id="rationale" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true" aria-labelledby="rationaleLbl"></div>
       </div>
 
-      <div class="tcell">
-        <label class="tlabel" for="objectives">Objectives</label>
-        <textarea class="ta ta-objectives" id="objectives" rows="1"></textarea>
+      <div class="tcell fill" style="--g:1">
+        <div class="row-resizer" role="separator" aria-orientation="horizontal" tabindex="0" title="Drag to resize (double-click to reset)" aria-label="Resize Brief Rationale and Objectives"></div>
+        <label class="tlabel" id="objectivesLbl" data-for="objectives">Objectives</label>
+        <div class="ta ta-objectives" id="objectives" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true" aria-labelledby="objectivesLbl"></div>
       </div>
 
-      <div class="tcell">
-        <label class="tlabel" for="methodology">Methodology</label>
-        <textarea class="ta ta-methodology" id="methodology" rows="1"></textarea>
+      <div class="tcell fill" style="--g:2.2">
+        <div class="row-resizer" role="separator" aria-orientation="horizontal" tabindex="0" title="Drag to resize (double-click to reset)" aria-label="Resize Objectives and Methodology"></div>
+        <label class="tlabel" id="methodologyLbl" data-for="methodology">Methodology</label>
+        <div class="ta ta-methodology" id="methodology" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true" aria-labelledby="methodologyLbl"></div>
       </div>
     </div>
 
@@ -879,14 +1068,6 @@
 <!-- Final Thesis Requirement -->
 <div class="paper" id="paperFinal" hidden>
 
-  <!-- Header Section -->
-  <div class="header">
-    <img src="https://lh3.googleusercontent.com/d/1pqU0q2HoAp8liBybxU-AG-_nH79XMX6q=w500" data-fallbacks="https://drive.google.com/thumbnail?id=1pqU0q2HoAp8liBybxU-AG-_nH79XMX6q&amp;sz=w500|https://drive.google.com/uc?export=view&amp;id=1pqU0q2HoAp8liBybxU-AG-_nH79XMX6q" onerror="var f=(this.dataset.fallbacks||'').split('|').filter(Boolean);if(f.length){this.dataset.fallbacks=f.slice(1).join('|');this.src=f[0];}" alt="DOST Logo" class="dost-logo">
-    <h3>Department of Science and Technology</h3>
-    <h3 class="bold-inst">SCIENCE EDUCATION INSTITUTE</h3>
-  </div>
-
-  
   <form id="thesisFormF" onsubmit="return false;">
 
     <!-- Scholar information -->
@@ -921,13 +1102,13 @@
     <!-- Thesis table -->
     <div class="thesis-box">
       <div class="tcell title-cell">
-        <textarea class="ta ta-title" rows="1" aria-label="Title of Thesis"></textarea>
+        <div class="ta ta-title" aria-label="Title of Thesis" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true"></div>
       </div>
       <div class="tcell caption">Title of Thesis</div>
 
-      <div class="tcell">
-        <label class="tlabel center" for="abstract">Abstract</label>
-        <textarea class="ta ta-abstract" id="abstract" rows="1"></textarea>
+      <div class="tcell fill" style="--g:1">
+        <label class="tlabel center" id="abstractLbl" data-for="abstract">Abstract</label>
+        <div class="ta ta-abstract" id="abstract" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true" aria-labelledby="abstractLbl"></div>
       </div>
     </div>
 
@@ -962,7 +1143,9 @@
 
 
 
-<!-- Upload / Print (right) -->
+<!-- Right column: actions + text tools (separate cards) -->
+<div class="right-col">
+<!-- Upload / Print -->
 <div class="btn-bar action-bar" role="toolbar" aria-label="Form actions">
   <button type="button" class="btn btn-secondary" onclick="triggerImageUpload()" title="Upload pictures or signatures. You can also drop images onto the form, drag to move, pull the corner to resize, and use the round handle on top to rotate." aria-label="Upload pictures or signatures">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -972,6 +1155,42 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
     <span class="btn-label">PRINT/<wbr>DOWNLOAD</span>
   </button>
+</div>
+
+<!-- Text tools (separate from Upload / Print) -->
+<div class="btn-bar tools-bar" role="toolbar" aria-label="Text tools">
+  <div class="size-ctl" role="group" aria-label="Text size of the form fields">
+    <span class="size-lbl">TEXT SIZE</span>
+    <div class="size-row">
+      <button type="button" class="size-btn" id="fsDown" title="Smaller text" aria-label="Decrease text size">A&minus;</button>
+      <output class="size-val" id="fsVal" aria-live="polite">13</output>
+      <button type="button" class="size-btn" id="fsUp" title="Larger text" aria-label="Increase text size">A+</button>
+    </div>
+  </div>
+  <div class="fmt-ctl" role="group" aria-label="Text formatting">
+    <span class="size-lbl">FORMAT</span>
+    <div class="fmt-grid">
+      <button type="button" class="fmt-btn" data-cmd="bold" title="Bold (Ctrl+B)" aria-label="Bold (Ctrl+B)" aria-pressed="false"><b>B</b></button>
+      <button type="button" class="fmt-btn" data-cmd="italic" title="Italic (Ctrl+I)" aria-label="Italic (Ctrl+I)" aria-pressed="false"><i style="font-family:Georgia,serif">I</i></button>
+      <button type="button" class="fmt-btn" data-cmd="underline" title="Underline (Ctrl+U)" aria-label="Underline (Ctrl+U)" aria-pressed="false"><u>U</u></button>
+      <button type="button" class="fmt-btn" data-cmd="strikeThrough" title="Strikethrough" aria-label="Strikethrough" aria-pressed="false"><s>S</s></button>
+      <button type="button" class="fmt-btn" data-cmd="subscript" title="Subscript" aria-label="Subscript" aria-pressed="false"><span>X<sub style="font-size:9px;font-weight:700;line-height:0">2</sub></span></button>
+      <button type="button" class="fmt-btn" data-cmd="superscript" title="Superscript" aria-label="Superscript" aria-pressed="false"><span>X<sup style="font-size:9px;font-weight:700;line-height:0">2</sup></span></button>
+      <div class="fmt-sep" style="grid-column:1/-1"></div>
+      <button type="button" class="fmt-btn" data-cmd="insertOrderedList" title="Numbered list (1. a. i. by indent level)" aria-label="Numbered list (1. a. i. by indent level)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 4.5l1.5-.8V9"/><path d="M3.8 13.5a1.5 1.5 0 1 1 2.6 1L3.8 17.5h3"/></svg></button>
+      <button type="button" class="fmt-btn" data-cmd="insertUnorderedList" title="Bullet list (bullet style changes by indent level)" aria-label="Bullet list (bullet style changes by indent level)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg></button>
+      <button type="button" class="fmt-btn" data-cmd="outdent" title="Decrease indent (Shift+Tab in a list)" aria-label="Decrease indent (Shift+Tab in a list)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="7 8 3 12 7 16"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="18" x2="11" y2="18"/></svg></button>
+      <button type="button" class="fmt-btn" data-cmd="indent" title="Increase indent (Tab in a list)" aria-label="Increase indent (Tab in a list)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 8 7 12 3 16"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="18" x2="11" y2="18"/></svg></button>
+      <button type="button" class="fmt-btn" data-cmd="lineSpacing" title="Line spacing (cycles 1.0 / 1.5 / 2.0 for the whole field)" aria-label="Line spacing (cycles 1.0 / 1.5 / 2.0 for the whole field)" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="7 4 4 7 10 7 7 4" /><line x1="7" y1="7" x2="7" y2="17"/><polyline points="4 17 7 20 10 17"/><line x1="14" y1="7" x2="21" y2="7"/><line x1="14" y1="12" x2="21" y2="12"/><line x1="14" y1="17" x2="21" y2="17"/></svg></button>
+      <div class="fmt-sep" style="grid-column:1/-1"></div>
+      <button type="button" class="fmt-btn" data-cmd="justifyLeft" title="Align left" aria-label="Align left" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="10" x2="14" y2="10"/><line x1="3" y1="14" x2="21" y2="14"/><line x1="3" y1="18" x2="14" y2="18"/></svg></button>
+      <button type="button" class="fmt-btn" data-cmd="justifyCenter" title="Align center" aria-label="Align center" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="7" y1="10" x2="17" y2="10"/><line x1="3" y1="14" x2="21" y2="14"/><line x1="7" y1="18" x2="17" y2="18"/></svg></button>
+      <button type="button" class="fmt-btn" data-cmd="justifyRight" title="Align right" aria-label="Align right" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="10" y1="10" x2="21" y2="10"/><line x1="3" y1="14" x2="21" y2="14"/><line x1="10" y1="18" x2="21" y2="18"/></svg></button>
+      <button type="button" class="fmt-btn" data-cmd="justifyFull" title="Justify" aria-label="Justify" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="14" x2="21" y2="14"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <button type="button" class="fmt-btn" data-cmd="removeFormat" title="Clear formatting" aria-label="Clear formatting" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="3" y1="3" x2="21" y2="21"/></svg></button>
+    </div>
+  </div>
+</div>
 </div>
 </div>
 
@@ -1459,16 +1678,100 @@
   });
   });
 
-  /* Thesis textareas grow with their content so nothing is clipped on screen or in print */
+  /* Thesis fields are rich-text editable areas; they size themselves from their content */
+  window.__growAll = function () {};
+
+  /* Rich text toolbar */
   (function () {
-    const areas = Array.from(document.querySelectorAll('textarea.ta'));
-    function grow(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
-    function growAll() { areas.forEach(grow); }
-    areas.forEach(t => t.addEventListener('input', () => grow(t)));
-    window.addEventListener('beforeprint', growAll);
-    window.addEventListener('resize', growAll);
-    growAll();
-    window.__growAll = growAll;
+    const fields = Array.from(document.querySelectorAll('.ta[contenteditable]'));
+    const btns = Array.from(document.querySelectorAll('.fmt-btn'));
+    const STATE = ['bold','italic','underline','strikeThrough','subscript','superscript',
+                   'insertOrderedList','insertUnorderedList','justifyLeft','justifyCenter','justifyRight','justifyFull'];
+    let lastField = null, lastRange = null;
+    const SPACING = ['', '1.5', '2'];   // '' = default (1.45)
+
+    // Label clicks focus the matching field
+    document.querySelectorAll('label[data-for]').forEach(l =>
+      l.addEventListener('click', () => { const t = document.getElementById(l.dataset.for); if (t) t.focus(); }));
+
+    function fieldOf(node) {
+      const el = node && (node.nodeType === 1 ? node : node.parentElement);
+      return el ? el.closest('.ta[contenteditable]') : null;
+    }
+    function remember() {
+      const sel = window.getSelection();
+      if (!sel.rangeCount) return;
+      const f = fieldOf(sel.anchorNode);
+      if (f && f === fieldOf(sel.focusNode)) { lastField = f; lastRange = sel.getRangeAt(0).cloneRange(); }
+    }
+    function restore() {
+      if (!lastField || !lastField.offsetParent) return false;
+      if (fieldOf(window.getSelection().anchorNode) !== lastField) {
+        lastField.focus();
+        if (lastRange) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(lastRange); }
+      }
+      return true;
+    }
+    function refresh() {
+      const sel = window.getSelection();
+      const inField = !!fieldOf(sel.anchorNode);
+      if (inField) remember();
+      const active = restoreless();
+      btns.forEach(b => {
+        const c = b.dataset.cmd;
+        if (STATE.includes(c)) {
+          let on = false;
+          if (inField) { try { on = document.queryCommandState(c); } catch (e) {} }
+          b.setAttribute('aria-pressed', String(on));
+        }
+        b.disabled = !active;
+      });
+    }
+    function restoreless() { return !!(lastField && lastField.offsetParent); }
+
+    document.addEventListener('selectionchange', refresh);
+    fields.forEach(f => f.addEventListener('focus', refresh));
+
+    // Keep the text selection when pressing a toolbar button with the mouse
+    btns.forEach(b => b.addEventListener('mousedown', e => e.preventDefault()));
+
+    document.execCommand('defaultParagraphSeparator', false, 'div');
+
+    btns.forEach(b => b.addEventListener('click', () => {
+      if (!restore()) return;
+      const c = b.dataset.cmd;
+      if (c === 'lineSpacing') {
+        const i = (SPACING.indexOf(lastField.dataset.ls || '') + 1) % SPACING.length;
+        lastField.dataset.ls = SPACING[i];
+        lastField.style.lineHeight = SPACING[i];
+        b.title = 'Line spacing: ' + (SPACING[i] || '1.0') + ' (click to change)';
+      } else {
+        document.execCommand(c, false, null);
+      }
+      remember();
+      refresh();
+    }));
+
+    fields.forEach(f => {
+      // Tab / Shift+Tab change the list level when the cursor is in a list; otherwise Tab moves focus as usual
+      f.addEventListener('keydown', e => {
+        if (e.key !== 'Tab' || e.ctrlKey || e.altKey || e.metaKey) return;
+        const sel = window.getSelection();
+        const n = sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
+        if (n && n.closest('li')) {
+          e.preventDefault();
+          document.execCommand(e.shiftKey ? 'outdent' : 'indent', false, null);
+        }
+      });
+      // Paste as plain text so outside styles never leak into the form
+      f.addEventListener('paste', e => {
+        e.preventDefault();
+        const t = (e.clipboardData || window.clipboardData).getData('text/plain');
+        document.execCommand('insertText', false, t);
+      });
+    });
+
+    refresh();
   })();
 
   /* Switch between the thesis forms */
@@ -1489,6 +1792,86 @@
     if (window.__growAll) window.__growAll();
     window.scrollTo(0, 0);
   }
+
+  /* Text size of the thesis fields (shared by both forms) */
+  (function () {
+    const MIN = 8, MAX = 20, DEF = 13;
+    const val = document.getElementById('fsVal');
+    const dn = document.getElementById('fsDown');
+    const up = document.getElementById('fsUp');
+    let size = DEF;
+
+    function apply(n) {
+      size = Math.max(MIN, Math.min(MAX, n));
+      document.documentElement.style.setProperty('--ta-size', size + 'px');
+      val.textContent = size;
+      dn.disabled = size <= MIN;
+      up.disabled = size >= MAX;
+      if (window.__growAll) window.__growAll();
+    }
+    dn.addEventListener('click', () => apply(size - 1));
+    up.addEventListener('click', () => apply(size + 1));
+    apply(DEF);
+  })();
+
+  /* Adjustable heights: drag the line at the top of Objectives or Methodology.
+     Space moves between the two neighbouring fields; the last field (Methodology) absorbs
+     any remainder, so the A4 page and the signatures never shift. */
+  (function () {
+    document.querySelectorAll('.row-resizer').forEach(function (h) {
+      const lower = h.parentElement;
+      const upper = lower.previousElementSibling;
+      const cells = Array.from(lower.parentElement.querySelectorAll('.tcell.fill'));
+      const last = cells[cells.length - 1];
+
+      // Smallest height a field may shrink to: its non-textarea part plus 60px of writing space
+      const minOf = (c) => c.offsetHeight - c.querySelector('.ta').offsetHeight + 60;
+
+      // Pin every field except the last at its current height; the last one takes what is left
+      function freeze() {
+        cells.forEach(c => { c.style.flex = c === last ? '1 1 0' : '0 0 ' + c.offsetHeight + 'px'; });
+      }
+
+      let startY = 0, u0 = 0, l0 = 0, uMin = 0, lMin = 0, dragging = false;
+
+      function begin(y) {
+        freeze();
+        startY = y;
+        u0 = upper.offsetHeight; l0 = lower.offsetHeight;
+        uMin = minOf(upper); lMin = minOf(lower);
+      }
+      function shift(dy) {
+        dy = Math.max(-(u0 - uMin), Math.min(dy, l0 - lMin));
+        upper.style.flex = '0 0 ' + (u0 + dy) + 'px';
+        if (lower !== last) lower.style.flex = '0 0 ' + (l0 - dy) + 'px';
+      }
+
+      h.addEventListener('pointerdown', function (e) {
+        e.preventDefault();
+        dragging = true;
+        h.classList.add('active');
+        h.setPointerCapture(e.pointerId);
+        begin(e.clientY);
+      });
+      h.addEventListener('pointermove', function (e) { if (dragging) shift(e.clientY - startY); });
+      function end() { dragging = false; h.classList.remove('active'); }
+      h.addEventListener('pointerup', end);
+      h.addEventListener('pointercancel', end);
+
+      h.addEventListener('keydown', function (e) {
+        const step = e.shiftKey ? 24 : 8;
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          begin(0);
+          shift(e.key === 'ArrowUp' ? -step : step);
+        }
+      });
+
+      h.addEventListener('dblclick', function () {
+        cells.forEach(c => { c.style.flex = ''; });
+      });
+    });
+  })();
 </script>
 
 </body>
