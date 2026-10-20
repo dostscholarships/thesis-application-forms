@@ -304,14 +304,35 @@
 
   .floating-img-wrapper.dragging { cursor: grabbing; z-index: 150; }
 
-  .floating-img-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+  /* The wrapper is the *visible* frame. The picture inside is positioned from crop fractions
+     (--cl/--cr/--ct/--cb = share of the original hidden on each side), so resizing the frame
+     scales the cropped result and cropping never throws the original pixels away. */
+  .floating-img-wrapper { --cl: 0; --cr: 0; --ct: 0; --cb: 0; --fx: 1; --fy: 1; }
+
+  .floating-img-wrapper .img-clip {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .floating-img-wrapper .img-clip img,
+  .floating-img-wrapper .img-ghost {
+    position: absolute;
+    max-width: none;
+    width: calc(100% / var(--fx));
+    height: calc(100% / var(--fy));
+    left: calc(var(--cl) / var(--fx) * -100%);
+    top: calc(var(--ct) / var(--fy) * -100%);
+    object-fit: fill;
     display: block;
     pointer-events: none;
     -webkit-user-drag: none;
   }
+
+  /* While cropping, the hidden part of the picture shows faintly around the frame */
+  .floating-img-wrapper .img-ghost { display: none; opacity: 0.35; }
+  .floating-img-wrapper.cropping .img-ghost { display: block; }
 
   .floating-img-wrapper:hover { outline: 1px dashed var(--accent); }
   .floating-img-wrapper:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -322,42 +343,96 @@
     outline-offset: 0;
   }
 
-  .floating-img-wrapper .btn-delete {
+  /* Small toolbar under the selected image: crop / reset / remove */
+  .floating-img-wrapper .img-tools {
     position: absolute;
-    top: -11px;
-    right: -11px;
-    width: 22px;
-    height: 22px;
+    top: 100%;
+    left: 50%;
+    margin-top: 16px;
+    transform: translateX(-50%);
+    display: none;
+    gap: 6px;
+    z-index: 3;
+  }
+  .floating-img-wrapper .img-tools button {
+    width: 24px;
+    height: 24px;
     padding: 0;
-    background: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
     color: #ffffff;
     border: 2px solid #ffffff;
     border-radius: 50%;
-    text-align: center;
-    line-height: 17px;
-    font-size: 14px;
-    font-weight: bold;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(15,23,42,0.3);
-    display: none;
   }
-  .floating-img-wrapper .btn-delete:hover { background: #b91c1c; }
-  .floating-img-wrapper .btn-delete:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .floating-img-wrapper .img-tools button svg { width: 12px; height: 12px; pointer-events: none; }
+  .floating-img-wrapper .img-tools button:hover { filter: brightness(1.2); }
+  .floating-img-wrapper .img-tools button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .floating-img-wrapper .img-tools .btn-crop.active { background: #ffffff; color: var(--accent); border-color: var(--accent); }
+  .floating-img-wrapper .img-tools .btn-delete { background: #dc2626; }
+  .floating-img-wrapper .img-tools .btn-delete:hover { background: #b91c1c; filter: none; }
 
+  /* Resize handles: corners scale proportionally, side handles stretch one direction */
   .floating-img-wrapper .resize-handle {
     position: absolute;
     width: 14px;
     height: 14px;
+    margin: -7px 0 0 -7px;
     background: var(--accent);
     border: 2px solid #ffffff;
     border-radius: 3px;
-    bottom: -8px;
-    right: -8px;
-    cursor: nwse-resize;
     box-shadow: 0 1px 4px rgba(15,23,42,0.35);
     touch-action: none;
     display: none;
+    z-index: 2;
   }
+  .floating-img-wrapper .resize-handle[data-dir="n"],
+  .floating-img-wrapper .resize-handle[data-dir="s"] { width: 22px; height: 10px; margin: -5px 0 0 -11px; border-radius: 5px; }
+  .floating-img-wrapper .resize-handle[data-dir="e"],
+  .floating-img-wrapper .resize-handle[data-dir="w"] { width: 10px; height: 22px; margin: -11px 0 0 -5px; border-radius: 5px; }
+  .floating-img-wrapper .resize-handle[data-dir="nw"] { top: 0;    left: 0;    cursor: nwse-resize; }
+  .floating-img-wrapper .resize-handle[data-dir="n"]  { top: 0;    left: 50%;  cursor: ns-resize; }
+  .floating-img-wrapper .resize-handle[data-dir="ne"] { top: 0;    left: 100%; cursor: nesw-resize; }
+  .floating-img-wrapper .resize-handle[data-dir="e"]  { top: 50%;  left: 100%; cursor: ew-resize; }
+  .floating-img-wrapper .resize-handle[data-dir="se"] { top: 100%; left: 100%; cursor: nwse-resize; }
+  .floating-img-wrapper .resize-handle[data-dir="s"]  { top: 100%; left: 50%;  cursor: ns-resize; }
+  .floating-img-wrapper .resize-handle[data-dir="sw"] { top: 100%; left: 0;    cursor: nesw-resize; }
+  .floating-img-wrapper .resize-handle[data-dir="w"]  { top: 50%;  left: 0;    cursor: ew-resize; }
+
+  /* Crop handles: dark corner brackets and edge bars, like a photo editor */
+  .floating-img-wrapper .crop-handle {
+    position: absolute;
+    display: none;
+    touch-action: none;
+    z-index: 2;
+    background: #111827;
+    box-shadow: 0 0 0 1px #ffffff;
+  }
+  .floating-img-wrapper .crop-handle[data-dir="n"],
+  .floating-img-wrapper .crop-handle[data-dir="s"] { width: 28px; height: 6px; left: 50%; margin-left: -14px; cursor: ns-resize; }
+  .floating-img-wrapper .crop-handle[data-dir="e"],
+  .floating-img-wrapper .crop-handle[data-dir="w"] { width: 6px; height: 28px; top: 50%; margin-top: -14px; cursor: ew-resize; }
+  .floating-img-wrapper .crop-handle[data-dir="n"] { top: -4px; }
+  .floating-img-wrapper .crop-handle[data-dir="s"] { bottom: -4px; }
+  .floating-img-wrapper .crop-handle[data-dir="w"] { left: -4px; }
+  .floating-img-wrapper .crop-handle[data-dir="e"] { right: -4px; }
+  .floating-img-wrapper .crop-handle[data-dir="nw"],
+  .floating-img-wrapper .crop-handle[data-dir="ne"],
+  .floating-img-wrapper .crop-handle[data-dir="sw"],
+  .floating-img-wrapper .crop-handle[data-dir="se"] {
+    width: 20px; height: 20px;
+    background: transparent;
+    box-shadow: none;
+    border: 0 solid #111827;
+    filter: drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 1px #ffffff);
+  }
+  .floating-img-wrapper .crop-handle[data-dir="nw"] { top: -4px;    left: -4px;  border-width: 5px 0 0 5px; cursor: nwse-resize; }
+  .floating-img-wrapper .crop-handle[data-dir="ne"] { top: -4px;    right: -4px; border-width: 5px 5px 0 0; cursor: nesw-resize; }
+  .floating-img-wrapper .crop-handle[data-dir="sw"] { bottom: -4px; left: -4px;  border-width: 0 0 5px 5px; cursor: nesw-resize; }
+  .floating-img-wrapper .crop-handle[data-dir="se"] { bottom: -4px; right: -4px; border-width: 0 5px 5px 0; cursor: nwse-resize; }
 
   .floating-img-wrapper .rotate-handle {
     position: absolute;
@@ -391,16 +466,17 @@
   .floating-img-wrapper .rotate-handle svg { width: 12px; height: 12px; pointer-events: none; }
   .floating-img-wrapper .rotate-handle:active { cursor: grabbing; }
 
-  .floating-img-wrapper.selected .btn-delete,
+  .floating-img-wrapper.selected .img-tools,
+  .floating-img-wrapper:focus-within .img-tools { display: flex; }
   .floating-img-wrapper.selected .resize-handle,
-  .floating-img-wrapper:focus-within .btn-delete,
-  .floating-img-wrapper:focus-within .resize-handle {
-    display: block;
-  }
+  .floating-img-wrapper:focus-within .resize-handle { display: block; }
   .floating-img-wrapper.selected .rotate-handle,
-  .floating-img-wrapper:focus-within .rotate-handle {
-    display: flex;
-  }
+  .floating-img-wrapper:focus-within .rotate-handle { display: flex; }
+
+  /* Crop mode swaps the resize and rotate handles for crop handles */
+  .floating-img-wrapper.cropping .resize-handle,
+  .floating-img-wrapper.cropping .rotate-handle { display: none !important; }
+  .floating-img-wrapper.cropping .crop-handle { display: block; }
 
   .paper.drop-active::after {
     content: "Drop images or signatures here";
@@ -752,7 +828,7 @@
     html, body { width: auto; height: auto; background: #fff; margin: 0; padding: 0; display: block; }
     .workspace { display: block; width: auto; margin: 0; }
     .paper { box-shadow: none; width: auto; min-height: 0; padding: 0; margin: 0; }
-    .btn-bar, .file-input-btn, .btn-delete, .resize-handle, .rotate-handle,
+    .btn-bar, .file-input-btn, .btn-delete, .img-tools, .resize-handle, .crop-handle, .rotate-handle, .img-ghost,
     .picker-date, .picker-btn, .cal-pop, .dd-caret, .dd-menu { display: none !important; }
     /* Images are positioned from the paper's top-left corner. In print that corner sits at the page margin, so pull images back by the same amount to keep them exactly where they are on screen */
     .floating-img-wrapper { outline: none !important; transform: translate(-0.75in, -0.5in) rotate(var(--rot, 0deg)); }
@@ -1161,7 +1237,7 @@
 <div class="right-col">
 <!-- Upload / Print -->
 <div class="btn-bar action-bar" role="toolbar" aria-label="Form actions">
-  <button type="button" class="btn btn-secondary" onclick="triggerImageUpload()" title="Upload pictures or signatures. You can also drop images onto the form, drag to move, pull the corner to resize, and use the round handle on top to rotate." aria-label="Upload pictures or signatures">
+  <button type="button" class="btn btn-secondary" onclick="triggerImageUpload()" title="Upload pictures or signatures. You can also drop images onto the form. Drag to move; pull a corner to resize, or a side handle to stretch horizontally or vertically; use the crop button under a selected image to crop; the round handle on top rotates." aria-label="Upload pictures or signatures">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
     <span class="btn-label">UPLOAD</span>
   </button>
@@ -1496,58 +1572,128 @@
     el.style.top = clamp(y, 0, paper.offsetHeight - el.offsetHeight) + 'px';
   }
 
+  const MIN_SIZE = 24;   // smallest visible width/height of an image, in px
+  const DIRS = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
+  const SVG_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+  const ICON_CROP  = SVG_OPEN + '<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>';
+  const ICON_CHECK = SVG_OPEN + '<polyline points="20 6 9 17 4 12"/></svg>';
+  const ICON_RESET = SVG_OPEN + '<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+
+  function applyCrop(el) {
+    const c = el._crop;
+    el.style.setProperty('--cl', c.l);
+    el.style.setProperty('--cr', c.r);
+    el.style.setProperty('--ct', c.t);
+    el.style.setProperty('--cb', c.b);
+    el.style.setProperty('--fx', 1 - c.l - c.r);
+    el.style.setProperty('--fy', 1 - c.t - c.b);
+  }
+
+  // New crop inset for one side. delta > 0 crops more, delta < 0 brings hidden picture back.
+  function cropInset(inset, other, full, delta, maxVisible) {
+    const lo = Math.max(0, 1 - other - maxVisible / full);   // can't reveal more than fits on the page
+    const hi = 1 - other - MIN_SIZE / full;                  // can't crop below the minimum size
+    return clamp(inset + delta / full, lo, hi);
+  }
+
+  function makeTool(cls, title, icon) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = cls;
+    b.title = title;
+    b.setAttribute('aria-label', title);
+    b.innerHTML = icon;
+    return b;
+  }
+
   function createMovableImage(src, topPos = 500, leftPos = 150) {
     const wrapper = document.createElement('div');
     wrapper.className = 'floating-img-wrapper selected';
     wrapper.tabIndex = 0;
     wrapper.style.width = '140px';
     wrapper.style.height = '80px';
+    wrapper._crop = { l: 0, r: 0, t: 0, b: 0 };
+
+    const ghost = document.createElement('img');
+    ghost.className = 'img-ghost';
+    ghost.alt = '';
+    ghost.draggable = false;
+    ghost.setAttribute('aria-hidden', 'true');
+
+    const clip = document.createElement('div');
+    clip.className = 'img-clip';
 
     const img = document.createElement('img');
     img.alt = '';
     img.draggable = false;
     img.onload = function() {
       if (img.naturalWidth && img.naturalHeight) {
+        wrapper._natRatio = img.naturalWidth / img.naturalHeight;
         wrapper.style.height = (140 * img.naturalHeight / img.naturalWidth) + 'px';
       }
       moveTo(wrapper, leftPos, topPos);
     };
     img.src = src;
+    ghost.src = src;
 
-    const delBtn = document.createElement('button');
-    delBtn.type = 'button';
-    delBtn.className = 'btn-delete';
-    delBtn.innerText = '×';
-    delBtn.title = 'Remove image';
-    delBtn.setAttribute('aria-label', 'Remove image');
-    delBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+    clip.appendChild(img);
+    wrapper.appendChild(ghost);
+    wrapper.appendChild(clip);
+
+    // Toolbar: crop / reset / remove
+    const tools = document.createElement('div');
+    tools.className = 'img-tools';
+    tools.addEventListener('pointerdown', (e) => e.stopPropagation());
+    const cropBtn = makeTool('btn-crop', 'Crop image', ICON_CROP);
+    cropBtn.setAttribute('aria-pressed', 'false');
+    const resetBtn = makeTool('btn-reset', 'Reset size and crop', ICON_RESET);
+    const delBtn = makeTool('btn-delete', 'Remove image', '<span aria-hidden="true" style="font-size:15px;line-height:1;font-weight:bold">×</span>');
     delBtn.onclick = (e) => {
       e.stopPropagation();
       wrapper.remove();
     };
+    tools.appendChild(cropBtn);
+    tools.appendChild(resetBtn);
+    tools.appendChild(delBtn);
+    wrapper.appendChild(tools);
 
-    const resizeHandle = document.createElement('div');
-    resizeHandle.className = 'resize-handle';
-    resizeHandle.title = 'Drag to resize';
+    // Resize handles (corners keep proportions, sides stretch) and crop handles
+    DIRS.forEach((dir) => {
+      const h = document.createElement('div');
+      h.className = 'resize-handle';
+      h.dataset.dir = dir;
+      h.title = dir.length === 2
+        ? 'Drag to resize (hold Shift to stretch freely)'
+        : (dir === 'n' || dir === 's' ? 'Drag to stretch vertically' : 'Drag to stretch horizontally');
+      wrapper.appendChild(h);
+    });
+    DIRS.forEach((dir) => {
+      const h = document.createElement('div');
+      h.className = 'crop-handle';
+      h.dataset.dir = dir;
+      h.title = 'Drag to crop';
+      wrapper.appendChild(h);
+    });
 
-    wrapper.appendChild(img);
-    wrapper.appendChild(delBtn);
     const rotateHandle = document.createElement('div');
     rotateHandle.className = 'rotate-handle';
     rotateHandle.title = 'Drag to rotate (hold Shift to snap to 15°, double-click to reset)';
     rotateHandle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>';
-
-    wrapper.appendChild(resizeHandle);
     wrapper.appendChild(rotateHandle);
+
     wrapper.style.top = topPos + 'px';
     wrapper.style.left = leftPos + 'px';
     paper.appendChild(wrapper);
 
-    makeElementInteractive(wrapper, resizeHandle, rotateHandle);
+    makeElementInteractive(wrapper);
     deselectAllExcept(wrapper);
   }
 
-  function makeElementInteractive(elmnt, resizeHandle, rotateHandle) {
+  function makeElementInteractive(elmnt) {
+    const rotateHandle = elmnt.querySelector('.rotate-handle');
+    const cropBtn = elmnt.querySelector('.btn-crop');
+    const resetBtn = elmnt.querySelector('.btn-reset');
+
     const getRot = () => parseFloat(elmnt.dataset.rot || '0') || 0;
     function setRot(deg) {
       deg = ((deg + 180) % 360 + 360) % 360 - 180;
@@ -1555,10 +1701,11 @@
       elmnt.style.setProperty('--rot', deg + 'deg');
     }
 
+    /* ---- move ---- */
     let startX, startY, origLeft, origTop, dragging = false;
 
     elmnt.addEventListener('pointerdown', function(e) {
-      if (e.target.closest('.btn-delete, .resize-handle, .rotate-handle')) return;
+      if (e.target.closest('.img-tools, .resize-handle, .crop-handle, .rotate-handle')) return;
       e.preventDefault();
       deselectAllExcept(elmnt);
       elmnt.classList.add('selected', 'dragging');
@@ -1578,6 +1725,30 @@
     elmnt.addEventListener('pointerup', stopDrag);
     elmnt.addEventListener('pointercancel', stopDrag);
 
+    /* ---- crop mode on/off ---- */
+    function setCropMode(on) {
+      elmnt.classList.toggle('cropping', on);
+      cropBtn.classList.toggle('active', on);
+      cropBtn.setAttribute('aria-pressed', String(on));
+      cropBtn.title = on ? 'Done cropping' : 'Crop image';
+      cropBtn.setAttribute('aria-label', cropBtn.title);
+      cropBtn.innerHTML = on ? ICON_CHECK : ICON_CROP;
+    }
+    elmnt._setCrop = setCropMode;
+    const isCropping = () => elmnt.classList.contains('cropping');
+
+    cropBtn.onclick = (e) => {
+      e.stopPropagation();
+      deselectAllExcept(elmnt);
+      elmnt.classList.add('selected');
+      setCropMode(!isCropping());
+    };
+    elmnt.addEventListener('dblclick', function(e) {
+      if (e.target.closest('.img-tools, .resize-handle, .crop-handle, .rotate-handle')) return;
+      elmnt.classList.add('selected');
+      setCropMode(!isCropping());
+    });
+
     elmnt.addEventListener('keydown', function(e) {
       const step = e.shiftKey ? 10 : 1;
       let dx = 0, dy = 0;
@@ -1586,7 +1757,11 @@
       else if (e.key === 'ArrowUp') dy = -step;
       else if (e.key === 'ArrowDown') dy = step;
       else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); elmnt.remove(); return; }
-      else if (e.key === 'Escape') { elmnt.classList.remove('selected'); elmnt.blur(); return; }
+      else if (e.key === 'Enter' && e.target === elmnt) { e.preventDefault(); setCropMode(!isCropping()); return; }
+      else if (e.key === 'Escape') {
+        if (isCropping()) { setCropMode(false); return; }
+        elmnt.classList.remove('selected'); elmnt.blur(); return;
+      }
       else if (e.code === 'BracketLeft' || e.code === 'BracketRight') {
         e.preventDefault();
         elmnt.classList.add('selected');
@@ -1599,34 +1774,123 @@
       moveTo(elmnt, elmnt.offsetLeft + dx, elmnt.offsetTop + dy);
     });
 
-    let resizing = false, rStartX, rStartY, rStartW, rRatio;
+    /* ---- geometry helpers (work for rotated images too) ---- */
+    const num = (v, fallback) => { const n = parseFloat(v); return isNaN(n) ? fallback : n; };
 
-    resizeHandle.addEventListener('pointerdown', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      resizing = true;
-      resizeHandle.setPointerCapture(e.pointerId);
-      rStartX = e.clientX;
-      rStartY = e.clientY;
-      rStartW = elmnt.offsetWidth;
-      rRatio = elmnt.offsetWidth / Math.max(1, elmnt.offsetHeight);
-    });
+    function startGeom() {
+      const w = num(elmnt.style.width, elmnt.offsetWidth);
+      const h = num(elmnt.style.height, elmnt.offsetHeight);
+      return {
+        w, h,
+        cx: num(elmnt.style.left, elmnt.offsetLeft) + w / 2,
+        cy: num(elmnt.style.top, elmnt.offsetTop) + h / 2
+      };
+    }
 
-    resizeHandle.addEventListener('pointermove', function(e) {
-      if (!resizing) return;
-      const maxW = Math.min(paper.clientWidth - elmnt.offsetLeft,
-                            (paper.offsetHeight - elmnt.offsetTop) * rRatio);
-      const a = getRot() * Math.PI / 180;
-      const delta = (e.clientX - rStartX) * Math.cos(a) + (e.clientY - rStartY) * Math.sin(a);
-      const w = clamp(rStartW + delta, 24, maxW);
+    // Pointer movement on screen -> movement along the image's own (rotated) axes
+    function toLocal(dx, dy) {
+      const a = getRot() * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+      return { x: dx * c + dy * s, y: -dx * s + dy * c };
+    }
+
+    // Apply a new size. (sx, sy) is how far the centre moved along the image's own axes,
+    // which keeps the edge opposite the dragged handle fixed on screen.
+    function commit(g, w, h, sx, sy) {
+      const a = getRot() * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+      const cx = g.cx + sx * c - sy * s;
+      const cy = g.cy + sx * s + sy * c;
+      const host = elmnt.parentElement;
       elmnt.style.width = w + 'px';
-      elmnt.style.height = (w / rRatio) + 'px';
+      elmnt.style.height = h + 'px';
+      elmnt.style.left = clamp(cx - w / 2, 0, host.clientWidth - w) + 'px';
+      elmnt.style.top = clamp(cy - h / 2, 0, host.offsetHeight - h) + 'px';
+    }
+
+    function bindHandle(handle, onStart, onMove) {
+      let active = false, px, py, st;
+      handle.addEventListener('pointerdown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        deselectAllExcept(elmnt);
+        elmnt.classList.add('selected');
+        active = true;
+        handle.setPointerCapture(e.pointerId);
+        px = e.clientX; py = e.clientY;
+        st = onStart();
+      });
+      handle.addEventListener('pointermove', function(e) {
+        if (!active) return;
+        onMove(st, toLocal(e.clientX - px, e.clientY - py), e);
+      });
+      const stop = () => { active = false; };
+      handle.addEventListener('pointerup', stop);
+      handle.addEventListener('pointercancel', stop);
+    }
+
+    /* ---- resize: corners proportional, sides stretch ---- */
+    elmnt.querySelectorAll('.resize-handle').forEach(function(handle) {
+      const dir = handle.dataset.dir;
+      const E = dir.includes('e'), W = dir.includes('w'), S = dir.includes('s'), N = dir.includes('n');
+      const corner = dir.length === 2;
+      bindHandle(handle, startGeom, function(g, d, e) {
+        const host = elmnt.parentElement;
+        const maxW = host.clientWidth, maxH = host.offsetHeight;
+        const dw = E ? d.x : W ? -d.x : 0;
+        const dh = S ? d.y : N ? -d.y : 0;
+        let w, h;
+        if (corner && !e.shiftKey) {
+          let k = 1 + (dw * g.w + dh * g.h) / (g.w * g.w + g.h * g.h);
+          k = clamp(k, Math.max(MIN_SIZE / g.w, MIN_SIZE / g.h), Math.min(maxW / g.w, maxH / g.h));
+          w = g.w * k; h = g.h * k;
+        } else {
+          w = clamp(g.w + dw, MIN_SIZE, maxW);
+          h = clamp(g.h + dh, MIN_SIZE, maxH);
+        }
+        commit(g, w, h,
+               E ? (w - g.w) / 2 : W ? -(w - g.w) / 2 : 0,
+               S ? (h - g.h) / 2 : N ? -(h - g.h) / 2 : 0);
+      });
     });
 
-    function stopResize() { resizing = false; }
-    resizeHandle.addEventListener('pointerup', stopResize);
-    resizeHandle.addEventListener('pointercancel', stopResize);
+    /* ---- crop: move the frame's edges over a fixed picture ---- */
+    elmnt.querySelectorAll('.crop-handle').forEach(function(handle) {
+      const dir = handle.dataset.dir;
+      const E = dir.includes('e'), W = dir.includes('w'), S = dir.includes('s'), N = dir.includes('n');
+      bindHandle(handle, function() {
+        const g = startGeom(), c = elmnt._crop;
+        return { g, c: { l: c.l, r: c.r, t: c.t, b: c.b },
+                 IW: g.w / (1 - c.l - c.r), IH: g.h / (1 - c.t - c.b) };   // full-picture size in px
+      }, function(st, d) {
+        const { g, c, IW, IH } = st;
+        const host = elmnt.parentElement;
+        const n = { l: c.l, r: c.r, t: c.t, b: c.b };
+        if (E) n.r = cropInset(c.r, c.l, IW, -d.x, host.clientWidth);
+        if (W) n.l = cropInset(c.l, c.r, IW,  d.x, host.clientWidth);
+        if (S) n.b = cropInset(c.b, c.t, IH, -d.y, host.offsetHeight);
+        if (N) n.t = cropInset(c.t, c.b, IH,  d.y, host.offsetHeight);
+        elmnt._crop = n;
+        applyCrop(elmnt);
+        const w = IW * (1 - n.l - n.r), h = IH * (1 - n.t - n.b);
+        commit(g, w, h,
+               E ? (w - g.w) / 2 : W ? -(w - g.w) / 2 : 0,
+               S ? (h - g.h) / 2 : N ? -(h - g.h) / 2 : 0);
+      });
+    });
 
+    /* ---- reset: remove the crop and restore the original proportions ---- */
+    resetBtn.onclick = function(e) {
+      e.stopPropagation();
+      const g = startGeom();
+      const host = elmnt.parentElement;
+      elmnt._crop = { l: 0, r: 0, t: 0, b: 0 };
+      applyCrop(elmnt);
+      const ratio = elmnt._natRatio || (g.w / g.h);
+      let w = g.w, h = w / ratio;
+      const k = Math.min(1, host.clientWidth / w, host.offsetHeight / h);
+      commit(g, w * k, h * k, 0, 0);
+    };
+
+    /* ---- rotate ---- */
     let rotating = false;
     rotateHandle.addEventListener('pointerdown', function(e) {
       e.preventDefault();
@@ -1652,9 +1916,17 @@
 
   function deselectAllExcept(target) {
     document.querySelectorAll('.floating-img-wrapper').forEach(el => {
-      if (el !== target) el.classList.remove('selected');
+      if (el !== target) {
+        el.classList.remove('selected');
+        if (el._setCrop) el._setCrop(false);   // leaving an image also ends its crop mode
+      }
     });
   }
+
+  // Never print the crop overlay
+  window.addEventListener('beforeprint', () => {
+    document.querySelectorAll('.floating-img-wrapper').forEach(el => { if (el._setCrop) el._setCrop(false); });
+  });
 
   sheets.forEach(function (el) {
   el.addEventListener('pointerdown', function(e) {
