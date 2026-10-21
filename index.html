@@ -738,7 +738,7 @@
   /* ===== Thesis form specific ===== */
   .info-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content;
+    grid-template-columns: max-content minmax(0, 1fr);
     gap: 7px 24px;
     margin-bottom: 20px;
   }
@@ -751,6 +751,7 @@
     line-height: 1.25;
   }
   .info-row.full { grid-column: 1 / -1; }
+  .info-row .inp-line.ctr { text-align: center; }
   .info-row .lbl { font-weight: 700; }
   .info-row .checkbox-group { flex-wrap: nowrap; gap: 12px; margin-left: 4px; }
   .info-row .cb-item { align-items: center; white-space: nowrap; }
@@ -1075,6 +1076,9 @@
     <!-- Scholar information -->
     <div class="info-grid">
       <div class="info-row"><span class="lbl">Name:</span><input type="text" class="inp-line" aria-label="Name"></div>
+      <div class="info-row"><span class="lbl">Year of Award:</span><input type="text" class="inp-line ctr" aria-label="Year of Award"></div>
+      <div class="info-row"><span class="lbl">School:</span><input type="text" class="inp-line" value="Ateneo de Manila University" aria-label="School"></div>
+      <div class="info-row"><span class="lbl">SPAS ID:</span><input type="text" class="inp-line ctr" aria-label="SPAS ID"></div>
       <div class="info-row">
         <span class="lbl">Scholarship Program:</span>
         <div class="checkbox-group">
@@ -1083,12 +1087,7 @@
           <label class="cb-item"><input type="checkbox"> RA 10612</label>
         </div>
       </div>
-
-      <div class="info-row"><span class="lbl">School:</span><input type="text" class="inp-line" value="Ateneo de Manila University" aria-label="School"></div>
-      <div class="info-row"><span class="lbl">Year of Award:</span><input type="text" class="inp-line" aria-label="Year of Award"></div>
-
-      <div class="info-row"><span class="lbl">ID No.:</span><input type="text" class="inp-line" aria-label="ID Number"></div>
-      <div class="info-row"><span class="lbl">SPAS ID:</span><input type="text" class="inp-line" aria-label="SPAS ID"></div>
+      <div class="info-row"><span class="lbl">ID No.:</span><input type="text" class="inp-line ctr" aria-label="ID Number"></div>
 
       <div class="info-row full">
         <span class="lbl" id="degreeLbl">Degree Program:</span>
@@ -1163,6 +1162,9 @@
     <!-- Scholar information -->
     <div class="info-grid">
       <div class="info-row"><span class="lbl">Name:</span><input type="text" class="inp-line" aria-label="Name"></div>
+      <div class="info-row"><span class="lbl">Year of Award:</span><input type="text" class="inp-line ctr" aria-label="Year of Award"></div>
+      <div class="info-row"><span class="lbl">School:</span><input type="text" class="inp-line" value="Ateneo de Manila University" aria-label="School"></div>
+      <div class="info-row"><span class="lbl">SPAS ID:</span><input type="text" class="inp-line ctr" aria-label="SPAS ID"></div>
       <div class="info-row">
         <span class="lbl">Scholarship Program:</span>
         <div class="checkbox-group">
@@ -1171,12 +1173,7 @@
           <label class="cb-item"><input type="checkbox"> RA 10612</label>
         </div>
       </div>
-
-      <div class="info-row"><span class="lbl">School:</span><input type="text" class="inp-line" value="Ateneo de Manila University" aria-label="School"></div>
-      <div class="info-row"><span class="lbl">Year of Award:</span><input type="text" class="inp-line" aria-label="Year of Award"></div>
-
-      <div class="info-row"><span class="lbl">ID No.:</span><input type="text" class="inp-line" aria-label="ID Number"></div>
-      <div class="info-row"><span class="lbl">SPAS ID:</span><input type="text" class="inp-line" aria-label="SPAS ID"></div>
+      <div class="info-row"><span class="lbl">ID No.:</span><input type="text" class="inp-line ctr" aria-label="ID Number"></div>
 
       <div class="info-row full">
         <span class="lbl" id="degreeLblF">Degree Program:</span>
